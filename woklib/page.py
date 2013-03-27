@@ -12,9 +12,8 @@ import yaml
 import re
 
 # Wok
-from wok import util
-from wok import renderers
-from wok.jinja import GlobFileLoader, AmbiguousTemplate
+from . import util, renderers
+from .jinja import GlobFileLoader, AmbiguousTemplate
 
 class Page(object):
     """
