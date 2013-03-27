@@ -1,18 +1,16 @@
-#!/usr/bin/python2
 import os
 import sys
 import shutil
+import codecs
 from datetime import datetime
-from optparse import OptionParser, OptionGroup
+from argparse import ArgumentParser
 import logging
 
 import yaml
-
-import wok
-from wok.page import Page, Author
-from wok import renderers
-from wok import util
-from wok.dev_server import dev_server
+from _wok_configdata import description, version
+from . import renderers, util
+from .page import Page, Author
+from .dev_server import dev_server
 
 
 class Engine(object):
@@ -31,6 +29,7 @@ class Engine(object):
         'relative_urls': False,
     }
     SITE_ROOT = os.getcwd()
+    WOK_CONFIG = 'wokconfig'
 
     def __init__(self, output_lvl=1):
         """
@@ -40,111 +39,96 @@ class Engine(object):
 
         # CLI options
         # -----------
-        parser = OptionParser(version='%prog v{0}'.format(wok.version))
-
-        # Add option to to run the development server after generating pages
-        devserver_grp = OptionGroup(parser, "Development server",
-                "Runs a small development server after site generation. "
-                "--address and --port will be ignored if --server is absent.")
-        devserver_grp.add_option('--server', action='store_true',
-                dest='runserver',
-                help="run a development server after generating the site")
-        devserver_grp.add_option('--address', action='store', dest='address',
-                help="specify ADDRESS on which to run development server")
-        devserver_grp.add_option('--port', action='store', dest='port',
-                type='int',
-                help="specify PORT on which to run development server")
-        parser.add_option_group(devserver_grp)
+        parser = ArgumentParser(description=description)
+        parser.add_argument('--server', action='store', default='localhost:8000',
+                help="run a development server instead of generating the site")
 
         # Options for noisiness level and logging
-        logging_grp = OptionGroup(parser, "Logging",
+        group = parser.add_argument_group("Logging",
                 "By default, log messages will be sent to standard out, "
                 "and report only errors and warnings.")
-        parser.set_defaults(loglevel=logging.WARNING)
-        logging_grp.add_option('-q', '--quiet', action='store_const',
+        group.add_argument('-q', '--quiet', action='store_const',
                 const=logging.ERROR, dest='loglevel',
                 help="be completely quiet, log nothing")
-        logging_grp.add_option('--warnings', action='store_const',
+        group.add_argument('--warnings', action='store_const',
                 const=logging.WARNING, dest='loglevel',
                 help="log warnings in addition to errors")
-        logging_grp.add_option('-v', '--verbose', action='store_const',
+        group.add_argument('-v', '--verbose', action='store_const',
                 const=logging.INFO, dest='loglevel',
                 help="log ALL the things!")
-        logging_grp.add_option('--debug', action='store_const',
+        group.add_argument('--debug', action='store_const',
                 const=logging.DEBUG, dest='loglevel',
                 help="log debugging info in addition to warnings and errors")
-        logging_grp.add_option('--log', '-l', dest='logfile',
+        group.add_argument('--log', '-l', dest='logfile',
                 help="log to the specified LOGFILE instead of standard out")
-        parser.add_option_group(logging_grp)
 
-        cli_options, args = parser.parse_args()
+        options = parser.parse_args()
 
         # Set up logging
         # --------------
         logging_options = {
             'format': '%(levelname)s: %(message)s',
-            'level': cli_options.loglevel,
+            'level': options.loglevel if options.loglevel is not None else logging.WARNING,
         }
-        if cli_options.logfile:
-            logging_options['filename'] = cli_options.logfile
+        if options.logfile:
+            logging_options['filename'] = options.logfile
         else:
             logging_options['stream'] = sys.stdout
 
         logging.basicConfig(**logging_options)
 
-        # Action!
-        # -------
-        self.generate_site()
+        orig_dir = os.getcwd()
+        try:
+            os.chdir(self.SITE_ROOT)
+            self.read_options()
+            self.sanity_check()
+            if options.server:
+               self.start_server(options.server)
+            else:
+               self.generate_site()
+            self.run(options)
+        finally:
+            os.chdir(orig_dir)
 
-        # Dev server
-        # ----------
-        if cli_options.runserver:
-            ''' Run the dev server if the user said to, and watch the specified
-            directories for changes. The server will regenerate the entire wok
-            site if changes are found after every request.
-            '''
-            output_dir = os.path.join(self.options['output_dir'])
-            host = '' if cli_options.address is None else cli_options.address
-            port = 8000 if cli_options.port is None else cli_options.port
-            server = dev_server(serv_dir=output_dir, host=host, port=port,
-                dir_mon=True,
-                watch_dirs=[
-                    self.options['media_dir'],
-                    self.options['template_dir'],
-                    self.options['content_dir']
-                ],
-                change_handler=self.generate_site)
-            server.run()
+    def start_server(self, hostport):
+        ''' Run the dev server if the user said to, and watch the specified
+        directories for changes. The server will regenerate the entire wok
+        site if changes are found after every request.
+        '''
+        if ':' in hostport:
+            host, port = hostport.split(':', 1)
+            port = int(port)
+        else:
+            host = hostport
+            port = 8000
+        server = dev_server(serv_dir=self.options['output_dir'], host=host, port=port,
+            dir_mon=True,
+            watch_dirs=[
+                self.options['media_dir'],
+                self.options['template_dir'],
+                self.options['content_dir']
+            ],
+            change_handler=self.generate_site)
+        server.run()
 
     def generate_site(self):
         ''' Generate the wok site '''
-        orig_dir = os.getcwd()
-        os.chdir(self.SITE_ROOT)
-
         self.all_pages = []
-
-        self.read_options()
-        self.sanity_check()
         self.load_hooks()
-
         self.run_hook('site.start')
-
         self.prepare_output()
         self.load_pages()
         self.make_tree()
         self.render_site()
-
         self.run_hook('site.done')
-
-        os.chdir(orig_dir)
 
     def read_options(self):
         """Load options from the config file."""
         self.options = Engine.default_options.copy()
 
-        if os.path.isfile('config'):
-            with open('config') as f:
-                yaml_config = yaml.load(f)
+        if os.path.isfile(Engine.WOK_CONFIG):
+            with codecs.open(Engine.WOK_CONFIG, 'r', 'utf-8') as f:
+                yaml_config = yaml.safe_load(f)
 
             if yaml_config:
                 self.options.update(yaml_config)
@@ -170,9 +154,10 @@ class Engine(object):
     def sanity_check(self):
         """Basic sanity checks."""
         # Make sure that this is (probabably) a wok source directory.
-        if not (os.path.isdir('templates') or os.path.isdir('content')):
-            logging.critical("This doesn't look like a wok site. Aborting.")
-            sys.exit(1)
+        for name in ('template_dir', 'media_dir', 'content_dir'):
+            if not os.path.isdir(self.options[name]):
+                logging.critical("%s %r not found at %s, aborting" % (name, self.options[name], Engine.SITE_ROOT))
+                sys.exit(1)
 
     def load_hooks(self):
         try:
@@ -204,17 +189,22 @@ class Engine(object):
         Prepare the output directory. Remove any contents there already, and
         then copy over the media files, if they exist.
         """
-        if os.path.isdir(self.options['output_dir']):
-            for name in os.listdir(self.options['output_dir']):
-                path = os.path.join(self.options['output_dir'], name)
+        output = self.options['output_dir']
+        if util.is_sane_outdir(output, Engine.SITE_ROOT):
+            for name in os.listdir(output):
+                if name.startswith("."):
+                    # do not remove dotfiles; useful when output directory
+                    # is a git repository
+                    continue
+                path = os.path.join(output, name)
                 if os.path.isfile(path):
                     os.unlink(path)
                 else:
                     shutil.rmtree(path)
         else:
-            os.mkdir(self.options['output_dir'])
+            os.makedirs(output)
 
-        self.run_hook('site.output.pre', self.options['output_dir'])
+        self.run_hook('site.output.pre', output)
 
         # Copy the media directory to the output folder
         if os.path.isdir(self.options['media_dir']):
