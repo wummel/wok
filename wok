@@ -1,5 +1,57 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
+import sys
+import logging
+import argparse
+from _wok_configdata import description
 from woklib.engine import Engine
 
-Engine()
+
+def setup_parser():
+    """Construct CLI argument parser."""
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--server', action='store',
+            help="run a development server instead of generating the site")
+
+    # Options for noisiness level and logging
+    group = parser.add_argument_group("Logging",
+            "By default, log messages will be sent to standard out, "
+            "and report only errors and warnings.")
+    group.add_argument('-q', '--quiet', action='store_const',
+            const=logging.ERROR, dest='loglevel',
+            help="be completely quiet, log nothing")
+    group.add_argument('--warnings', action='store_const',
+            const=logging.WARNING, dest='loglevel',
+            help="log warnings in addition to errors")
+    group.add_argument('-v', '--verbose', action='store_const',
+            const=logging.INFO, dest='loglevel',
+            help="log ALL the things!")
+    group.add_argument('--debug', action='store_const',
+            const=logging.DEBUG, dest='loglevel',
+            help="log debugging info in addition to warnings and errors")
+    group.add_argument('--log', '-l', dest='logfile',
+            help="log to the specified LOGFILE instead of standard out")
+    return parser
+
+
+def main():
+    """Parse options and run the wok engine."""
+    options = setup_parser().parse_args()
+
+    # Set up logging
+    logging_options = {
+        'format': '%(levelname)s: %(message)s',
+        'level': options.loglevel if options.loglevel is not None else logging.WARNING,
+    }
+    if options.logfile:
+        logging_options['filename'] = options.logfile
+    else:
+        logging_options['stream'] = sys.stdout
+
+    logging.basicConfig(**logging_options)
+    engine = Engine()
+    engine.run(server=options.server)
+
+
+if __name__ == '__main__':
+    main()

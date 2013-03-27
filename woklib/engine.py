@@ -4,11 +4,9 @@ import sys
 import shutil
 import codecs
 from datetime import datetime
-from argparse import ArgumentParser
 import logging
 
 import yaml
-from _wok_configdata import description
 from . import renderers, util
 from .page import Page, Author
 from .dev_server import dev_server
@@ -29,65 +27,25 @@ class Engine(object):
         'url_include_index': True,
         'relative_urls': False,
     }
-    SITE_ROOT = os.getcwd()
-    WOK_CONFIG = 'wokconfig'
 
-    def __init__(self, output_lvl=1):
-        """
-        Set up CLI options, logging levels, and start everything off.
-        Afterwards, run a dev server if asked to.
-        """
-
-        # CLI options
-        # -----------
-        parser = ArgumentParser(description=description)
-        parser.add_argument('--server', action='store',
-                help="run a development server instead of generating the site")
-
-        # Options for noisiness level and logging
-        group = parser.add_argument_group("Logging",
-                "By default, log messages will be sent to standard out, "
-                "and report only errors and warnings.")
-        group.add_argument('-q', '--quiet', action='store_const',
-                const=logging.ERROR, dest='loglevel',
-                help="be completely quiet, log nothing")
-        group.add_argument('--warnings', action='store_const',
-                const=logging.WARNING, dest='loglevel',
-                help="log warnings in addition to errors")
-        group.add_argument('-v', '--verbose', action='store_const',
-                const=logging.INFO, dest='loglevel',
-                help="log ALL the things!")
-        group.add_argument('--debug', action='store_const',
-                const=logging.DEBUG, dest='loglevel',
-                help="log debugging info in addition to warnings and errors")
-        group.add_argument('--log', '-l', dest='logfile',
-                help="log to the specified LOGFILE instead of standard out")
-
-        options = parser.parse_args()
-
-        # Set up logging
-        # --------------
-        logging_options = {
-            'format': '%(levelname)s: %(message)s',
-            'level': options.loglevel if options.loglevel is not None else logging.WARNING,
-        }
-        if options.logfile:
-            logging_options['filename'] = options.logfile
+    def __init__(self, site_root=None, config='wokconfig'):
+        """Setup the site root and config filename."""
+        if site_root is None:
+            self.site_root = os.getcwd()
         else:
-            logging_options['stream'] = sys.stdout
+            self.site_root = site_root
+        self.config = 'wokconfig'
 
-        logging.basicConfig(**logging_options)
-
+    def run(self, server=None):
         orig_dir = os.getcwd()
         try:
-            os.chdir(self.SITE_ROOT)
+            os.chdir(self.site_root)
             self.read_options()
             self.sanity_check()
-            if options.server:
-               self.start_server(options.server)
+            if server:
+               self.start_server(server)
             else:
                self.generate_site()
-            self.run(options)
         finally:
             os.chdir(orig_dir)
 
@@ -127,8 +85,8 @@ class Engine(object):
         """Load options from the config file."""
         self.options = Engine.default_options.copy()
 
-        if os.path.isfile(Engine.WOK_CONFIG):
-            with codecs.open(Engine.WOK_CONFIG, 'r', 'utf-8') as f:
+        if os.path.isfile(self.config):
+            with codecs.open(self.config, 'r', 'utf-8') as f:
                 yaml_config = yaml.safe_load(f)
 
             if yaml_config:
@@ -157,7 +115,7 @@ class Engine(object):
         # Make sure that this is (probabably) a wok source directory.
         for name in ('template_dir', 'media_dir', 'content_dir'):
             if not os.path.isdir(self.options[name]):
-                logging.critical("%s %r not found at %s, aborting" % (name, self.options[name], Engine.SITE_ROOT))
+                logging.critical("%s %r not found at %s, aborting" % (name, self.options[name], self.site_root))
                 sys.exit(1)
 
     def load_hooks(self):
@@ -191,7 +149,7 @@ class Engine(object):
         then copy over the media files, if they exist.
         """
         output = self.options['output_dir']
-        if util.is_sane_outdir(output, Engine.SITE_ROOT):
+        if util.is_sane_outdir(output, self.site_root):
             for name in os.listdir(output):
                 if name.startswith("."):
                     # do not remove dotfiles; useful when output directory
