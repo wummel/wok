@@ -1,9 +1,6 @@
-try:
-    from twisted.trial.unittest import TestCase
-except ImportError:
-    from unittest import TestCase
+from unittest import TestCase
 
-from wok.page import Author
+from woklib.page import Author
 
 class TestAuthor(TestCase):
 
