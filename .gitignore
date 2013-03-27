@@ -4,6 +4,7 @@
 /build
 /MANIFEST
 /test_site/output
+/docs/output
 _trial_temp
 /dist
 /bin
