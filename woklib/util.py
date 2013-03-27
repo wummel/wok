@@ -38,19 +38,13 @@ def slugify(text, delim=u'-'):
     Generates a slug that will only use ASCII, be all lowercase, have no
     spaces, and otherwise be nice for filenames, identifiers, and urls.
     """
-    result = []
-    for word in _punct_re.split(text.lower()):
-        word = normalize('NFKD', unicode(word)).encode('ascii', 'ignore')
-        if word:
-            result.append(word)
-
-    result = delim.join(result)
-    if result[0] == '-':
-        result = result[1:]
-    if result[-1] == '-':
-        result = result[:-1]
-
-    return unicode(result)
+    assert len(delim) == 1
+    # normalize to ASCII
+    text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    # lowercase
+    text = text.lower()
+    words = [word for word in _punct_re.split(text) if word]
+    return delim.join(words).strip(delim)
 
 
 def chunk(li, n):
