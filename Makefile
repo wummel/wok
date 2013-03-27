@@ -5,7 +5,7 @@ APPNAME:=$(shell $(PYTHON) setup.py --name)
 # Pytest options:
 # --resultlog: write test results in file
 # -s: do not capture stdout/stderr (some tests fail otherwise)
-PYTESTOPTS?=--resultlog=testresults.txt -s
+PYTESTOPTS?=--resultlog=testresults.txt -n 10
 # which test modules to run
 TESTS ?= tests/
 # set test options

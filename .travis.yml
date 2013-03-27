@@ -8,6 +8,6 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - pip install pytest-xdist --use-mirrors
 # command to run tests
-script: make test PYTESTOPTS="--tb=short -n10"
+script: make test PYTESTOPTS="--tb=short -n 10"
 #notifications:
 #  email: false
