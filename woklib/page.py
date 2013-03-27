@@ -470,8 +470,8 @@ class Page(object):
         try:
             os.makedirs(os.path.dirname(path))
         except OSError as e:
-            logging.debug('makedirs failed for {0}'.format(
-                os.path.basename(path)))
+            logging.debug('makedirs failed for {0}: {1}'.format(
+                os.path.basename(path), e))
             # Probably that the dir already exists, so thats ok.
             # TODO: double check this. Permission errors are something to worry
             # about
