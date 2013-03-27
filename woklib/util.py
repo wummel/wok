@@ -56,16 +56,11 @@ def chunk(li, n):
     for i in xrange(0, len(li), n):
         yield li[i:i+n]
 
+
 def date_and_times(meta):
-
-    date_part = None
-    time_part = None
-
-    if 'date' in meta:
-        date_part = meta['date']
-
-    if 'time' in meta:
-        time_part = meta['time']
+    """Construct a datetime entry from separate date and time info."""
+    date_part = meta.get('date')
+    time_part = meta.get('time')
 
     if 'datetime' in meta:
         if date_part is None:
@@ -86,7 +81,6 @@ def date_and_times(meta):
 
     meta['date'] = date_part
     meta['time'] = time_part
-
     if date_part is not None and time_part is not None:
         meta['datetime'] = datetime(date_part.year, date_part.month,
                 date_part.day, time_part.hour, time_part.minute,
