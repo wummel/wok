@@ -1,6 +1,13 @@
 language: python
-python: ["2.6", "2.7"]
+python: ["2.6", "2.7", "3.3"]
+branches:
+  only:
+    - master
+# command to install dependencies
 install:
--   pip install -r requirements.txt
--   pip install Twisted
-script: trial wok
+  - pip install -r requirements.txt --use-mirrors
+  - pip install pytest-xdist --use-mirrors
+# command to run tests
+script: make test PYTESTOPTS="--tb=short -n10"
+#notifications:
+#  email: false
