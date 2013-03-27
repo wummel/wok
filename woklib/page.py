@@ -168,7 +168,7 @@ class Page(object):
         # slug
         if not 'slug' in self.meta:
             if self.filename:
-                filename_no_ext = '.'.join(self.filename.split('.')[:-1])
+                filename_no_ext = os.path.splitext(self.filename)[0]
                 self.meta['slug'] = util.slugify(filename_no_ext)
                 logging.info("You didn't specify a slug, generating it from the "
                              "filename.")
