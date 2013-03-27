@@ -33,12 +33,13 @@ pyflakes:
 clean:
 	find . -name \*.pyc -delete
 	find . -name \*.pyo -delete
-	rm -rf build dist
+	rm -rf build dist test_site/output
 
 localbuild:
 	$(PYTHON) setup.py build
 
 test:	localbuild
 	$(PYTHON) -m pytest $(PYTESTOPTS) $(TESTOPTS) $(TESTS)
+	cd test_site && ../wok
 
 .PHONY: test clean pyflakes check all doccheck localbuild
