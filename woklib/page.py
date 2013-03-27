@@ -1,10 +1,9 @@
 # System
 import os
 import sys
-from collections import namedtuple
-from datetime import datetime, date, time
 import logging
 import copy
+import codecs
 
 # Libraries
 import jinja2
@@ -82,8 +81,8 @@ class Page(object):
         page.path = path
         page.filename = os.path.basename(path)
 
-        with open(path) as f:
-            page.original = f.read().decode('utf-8')
+        with codecs.open(path, 'r', 'utf-8') as f:
+            page.original = f.read()
             splits = page.original.split('\n---\n')
 
             if len(splits) > 3:

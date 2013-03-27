@@ -1,5 +1,6 @@
 import glob
 import os
+import codecs
 
 from jinja2.loaders import FileSystemLoader, TemplateNotFound
 from jinja2.loaders import split_template_path
@@ -33,8 +34,8 @@ class GlobFileLoader(FileSystemLoader):
                 continue
             filename = filenames[0]
 
-            with open(filename) as f:
-                contents = f.read().decode(self.encoding)
+            with codecs.open(filename, 'r', self.encoding) as f:
+                contents = f.read()
 
             mtime = os.path.getmtime(filename)
             def uptodate():
