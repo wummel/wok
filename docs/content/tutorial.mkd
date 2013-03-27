@@ -18,14 +18,14 @@ want at least one of them.
 
 # 1. File Layout
 
-First, make a directory to hold all your site's code. Wok expects to find at least `content` and `templates` directories. It will also use the directories `media` and `hooks`, as well as the file `config`.
+First, make a directory to hold all your site's code. Wok expects to find at least `content` and `templates` directories. It will also use the directories `media` and `hooks`, as well as the file `wokconfig`.
 
     --MySite/
       |-- content/
       |-- templates/
       |-- media/
       |-- hooks/
-      \-- config
+      \-- wokconfig
 
 The `content` directory is where we will store the text of the web site. The
 `templates` directory will store the templates that give the site form and
@@ -36,7 +36,7 @@ to the rendering process of wok, which we won't be covering in this tutorial.
 Finally the config file, which is also optional, may contain some setting that
 wok will use to change the way it renders the site.
 
-Go ahead and make this directories, and create an empty file named config,
+Go ahead and make this directories, and create an empty file named wokconfig,
 because we will be using them all in this tutorial, except for `hooks`.
 
 # 2. Content
@@ -95,7 +95,7 @@ will put it in `contact.mkd`; here are the contents of that file.
     You can call me at 555-555-5555, or by email at `noone@nowhere.foo`.
 
 Since we didn't define a URL field, wok will auto generate one, based on the
-URL rule. Since we haven't specified one of those (it would go in the `config`
+URL rule. Since we haven't specified one of those (it would go in the `wokconfig`
 file), wok will use the default, which is `/{category}/{slug}.{ext}`. The slug
 for this site is `contact`, and we don't have any category defined, and the
 extension on the template is (going to be) 'html'. So this page's URL will be

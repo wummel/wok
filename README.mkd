@@ -148,7 +148,7 @@ slice and dice the data that wok gives you.
 
 Configuration
 -------------
-Settings can be changed in the file `config` in the current directory.
+Settings can be changed in the file `wokconfig` in the current directory.
 
 Possible configuration options (and their defaults) are
 
