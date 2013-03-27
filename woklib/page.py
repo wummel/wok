@@ -98,7 +98,7 @@ class Page(object):
 
             elif len(splits) == 2:
                 header = splits[0]
-                page.meta = yaml.load(header)
+                page.meta = yaml.safe_load(header)
                 page.original = splits[1]
                 page.original_preview = page.meta.get('preview', '')
 
@@ -107,7 +107,7 @@ class Page(object):
                 page.meta = {}
                 page.original = '\n'.join(splits[1:])
                 page.original_preview = splits[1]
-                page.meta.update(yaml.load(header))
+                page.meta.update(yaml.safe_load(header))
                 logging.debug('Got preview')
 
         page.build_meta()
