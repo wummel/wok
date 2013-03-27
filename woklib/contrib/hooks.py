@@ -1,4 +1,4 @@
-# vim: set fileencoding=utf8 :
+# -*- coding: iso-8859-1 -*-
 """Some hooks that might be useful."""
 
 import os

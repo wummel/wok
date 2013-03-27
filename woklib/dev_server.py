@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 ''' Really simple HTTP *development* server
 
 Do *NOT* attempt to use this as anything resembling a production server. It is

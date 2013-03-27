@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 from unittest import TestCase
 from datetime import date, time, datetime
 
