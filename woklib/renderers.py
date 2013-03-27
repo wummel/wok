@@ -1,14 +1,9 @@
-from wok import util
+from __future__ import print_function
+from .util import has_module
 
-# Check for pygments
-try:
-    import pygments
-    have_pygments = True
-except ImportError:
-    #XXX
-    #logging.info('Pygments not enabled.')
-    print 'Pygments not enabled.'
-    have_pygments = False
+
+if not has_module('pygments'):
+    print('Pygments not enabled.')
 
 # List of available renderers
 all = []
@@ -31,39 +26,32 @@ class Plain(Renderer):
 all.append(Plain)
 
 # Include markdown, if it is available.
-try:
+if has_module('markdown'):
     from markdown import markdown
-
     class Markdown(Renderer):
         """Markdown renderer."""
         extensions = ['markdown', 'mkd', 'md']
 
         plugins = ['def_list', 'footnotes']
-        if have_pygments:
-            plugins.append('codehilite(css_class=highlight)')
+        if has_module('pygments'):
+            plugins.append('codehilite(css_class=codehilite)')
+            plugins.append('fenced_code')
 
         @classmethod
         def render(cls, plain):
             return markdown(plain, cls.plugins)
 
     all.append(Markdown)
-
-except ImportError:
-    #XXX
-    #logging.debug("markdown isn't available, trying markdown2")
-    print "markdown isn't available, trying markdown2"
-    markdown = None
-
-# Try Markdown2
-if markdown is None:
-    try:
+else:
+    print("markdown isn't available, trying markdown2")
+    if has_module('markdown2'):
         import markdown2
         class Markdown2(Renderer):
             """Markdown2 renderer."""
             extensions = ['markdown', 'mkd', 'md']
 
             extras = ['def_list', 'footnotes']
-            if have_pygments:
+            if has_module('pygments'):
                 extras.append('fenced-code-blocks')
 
             @classmethod
@@ -71,20 +59,18 @@ if markdown is None:
                 return markdown2.markdown(plain, extras=cls.extras)
 
         all.append(Markdown2)
-    except ImportError:
-        #XXX
-        #logging.info('Markdown not enabled.')
-        print 'Markdown not enabled.'
+    else:
+        print('Markdown not enabled.')
 
 
 # Include ReStructuredText Parser, if we have docutils
-try:
+if has_module('docutils'):
     import docutils.core
     from docutils.writers.html4css1 import Writer as rst_html_writer
     from docutils.parsers.rst import directives
 
-    if have_pygments:
-        from wok.rst_pygments import Pygments as RST_Pygments
+    if has_module('pygments'):
+        from .rst_pygments import Pygments as RST_Pygments
         directives.register_directive('Pygments', RST_Pygments)
 
     class ReStructuredText(Renderer):
@@ -97,14 +83,12 @@ try:
             return docutils.core.publish_parts(plain, writer=w)['body']
 
     all.append(ReStructuredText)
-except ImportError:
-    #XXX
-    #logging.info('reStructuredText not enabled.')
-    print 'reStructuredText not enabled.'
+else:
+    print('reStructuredText not enabled.')
 
 
 # Try Textile
-try:
+if has_module('textile'):
     import textile
     class Textile(Renderer):
         """Textile renderer."""
@@ -115,10 +99,8 @@ try:
             return textile.textile(plain)
 
     all.append(Textile)
-except ImportError:
-    #XXX
-    #logging.info('Textile not enabled.')
-    print 'Textile not enabled.'
+else:
+    print('Textile not enabled.')
 
 
 if len(all) <= 2:
