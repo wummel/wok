@@ -3,7 +3,7 @@
 *.pyo
 /build
 /MANIFEST
-*/output
+/test_site/output
 _trial_temp
 /dist
 /bin
