@@ -40,7 +40,7 @@ class Engine(object):
         # CLI options
         # -----------
         parser = ArgumentParser(description=description)
-        parser.add_argument('--server', action='store', default='localhost:8000',
+        parser.add_argument('--server', action='store',
                 help="run a development server instead of generating the site")
 
         # Options for noisiness level and logging
