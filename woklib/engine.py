@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import logging
 
 import yaml
-from _wok_configdata import description, version
+from _wok_configdata import description
 from . import renderers, util
 from .page import Page, Author
 from .dev_server import dev_server
