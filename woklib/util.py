@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 from unicodedata import normalize
@@ -39,6 +40,8 @@ def slugify(text, delim=u'-'):
     spaces, and otherwise be nice for filenames, identifiers, and urls.
     """
     assert len(delim) == 1
+    if sys.version_info[0] < 3:
+        text = unicode(text)
     # normalize to ASCII
     text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
     # lowercase
