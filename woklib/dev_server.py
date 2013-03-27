@@ -20,7 +20,8 @@ import os
 from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
-class dev_server:
+class DevServer(object):
+    """Simple development HTTP server."""
 
     def __init__(self, serv_dir=None, host='', port=8000, dir_mon=False,
             watch_dirs=[], change_handler=None):
@@ -41,6 +42,7 @@ class dev_server:
         self.change_handler = change_handler
 
     def run(self):
+        """Run the server."""
         if self.serv_dir:
             os.chdir(self.serv_dir)
 
@@ -71,10 +73,11 @@ class dev_server:
 
 
 class RebuildHandlerWrapper(object):
+    """Rebuild handler."""
 
     def __init__(wrap_self, rebuild, watch_dirs):
         """
-        We can't pass arugments to HTTPRequestHandlers, because HTTPServer
+        We can't pass arguments to HTTPRequestHandlers, because HTTPServer
         calls __init__. So make a closure.
         """
         wrap_self.rebuild = rebuild

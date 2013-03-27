@@ -25,12 +25,14 @@ class Page(object):
 
     @classmethod
     def create_tmpl_env(cls, options):
+        """Construct Jinja template environment."""
         cls.tmpl_env = jinja2.Environment(
                 loader=GlobFileLoader(
                         options.get('template_dir', 'templates')),
                 extensions=options.get('jinja2_extensions', []))
 
     def __init__(self, options, engine):
+        """Initialize a page."""
         self.options = options
         self.filename = None
         self.meta = {}
@@ -368,6 +370,7 @@ class Page(object):
         return extra_pages
 
     def paginate(self, templ_vars):
+        """Add pagination content."""
         extra_pages = []
         logging.debug('called pagination for {0}'.format(self.meta['slug']))
         if 'page_items' not in self.meta['pagination']:
@@ -484,6 +487,7 @@ class Page(object):
         f.close()
 
     def __repr__(self):
+        """Get html-ified page info."""
         return "&lt;wok.page.Page '{0}'&gt;".format(self.meta['slug'])
 
 
@@ -492,12 +496,14 @@ class Author(object):
     parse_author_regex = re.compile(r'^([^<>]*) *(<(.*@.*)>)?$')
 
     def __init__(self, raw='', name=None, email=None):
+        """Initialize an author."""
         self.raw = raw.strip()
         self.name = name
         self.email = email
 
     @classmethod
     def parse(cls, raw):
+        """Parse an author string."""
         if isinstance(raw, cls):
             return raw
 
@@ -510,6 +516,7 @@ class Author(object):
         return a
 
     def __str__(self):
+        """Get author string representation."""
         if not self.name:
             return self.raw
         if not self.email:
@@ -518,11 +525,15 @@ class Author(object):
         return "{0} <{1}>".format(self.name, self.email)
 
     def __repr__(self):
+        """Get author text representation."""
         return '<wok.page.Author "{0} <{1}>">'.format(self.name, self.email)
 
     def __unicode__(self):
+        """Get author unicode presentation."""
         s = self.__str__()
         return s.replace('<', '&lt;').replace('>', '&gt;')
 
+
 class BadMetaException(Exception):
+    """Raised on meta info errors."""
     pass

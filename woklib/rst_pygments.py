@@ -68,6 +68,7 @@ class Pygments(Directive):
     has_content = True
 
     def run(self):
+        """Pygmentize text."""
         self.assert_has_content()
         try:
             lexer = get_lexer_by_name(self.arguments[0])

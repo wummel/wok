@@ -22,6 +22,7 @@ class HeadingAnchors(object):
     """
 
     def __init__(self, max_heading=3):
+        """Initialize heading anchor hook."""
         if not etree:
             logging.warning('To use the HeadingAnchors hook, you must install '
                 'the library lxml.')
@@ -30,6 +31,7 @@ class HeadingAnchors(object):
         logging.info('Loaded hook HeadingAnchors')
 
     def __call__(self, page):
+        """Add heading anchor."""
         if not etree:
             return
         logging.debug('Called hook HeadingAnchors on {0}'.format(page))

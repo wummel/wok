@@ -9,7 +9,7 @@ import logging
 import yaml
 from . import renderers, util
 from .page import Page, Author
-from .dev_server import dev_server
+from .dev_server import DevServer
 
 
 class Engine(object):
@@ -37,6 +37,7 @@ class Engine(object):
         self.config = 'wokconfig'
 
     def run(self, server=None):
+        """Generate site or run dev server."""
         orig_dir = os.getcwd()
         try:
             os.chdir(self.site_root)
@@ -60,7 +61,7 @@ class Engine(object):
         else:
             host = hostport
             port = 8000
-        server = dev_server(serv_dir=self.options['output_dir'], host=host, port=port,
+        server = DevServer(serv_dir=self.options['output_dir'], host=host, port=port,
             dir_mon=True,
             watch_dirs=[
                 self.options['media_dir'],
@@ -71,7 +72,7 @@ class Engine(object):
         server.run()
 
     def generate_site(self):
-        ''' Generate the wok site '''
+        """Generate the wok site"""
         self.all_pages = []
         self.load_hooks()
         self.run_hook('site.start')
@@ -119,6 +120,7 @@ class Engine(object):
                 sys.exit(1)
 
     def load_hooks(self):
+        """Load site hooks."""
         try:
             sys.path.append('hooks')
             import __hooks__
@@ -129,8 +131,7 @@ class Engine(object):
                 logging.info('No hooks module found.')
             else:
                 # don't catch import errors raised within a hook
-                logging.info('Import error within hooks.')
-                raise ImportError(e)
+                raise
 
     def run_hook(self, hook_name, *args):
         """ Run specified hooks if they exist """

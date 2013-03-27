@@ -10,10 +10,12 @@ if not has_module('pygments'):
 all = []
 
 class Renderer(object):
+    """Base renderer class."""
     extensions = []
 
     @classmethod
     def render(cls, plain):
+        """Render text."""
         return plain
 all.append(Renderer)
 
@@ -23,6 +25,7 @@ class Plain(Renderer):
 
     @classmethod
     def render(cls, plain):
+        """Render plain text."""
         return plain.replace('\n', '<br>')
 all.append(Plain)
 
@@ -40,6 +43,7 @@ if has_module('markdown'):
 
         @classmethod
         def render(cls, plain):
+            """Render markdown text."""
             return markdown(plain, cls.plugins)
 
     all.append(Markdown)
@@ -57,6 +61,7 @@ else:
 
             @classmethod
             def render(cls, plain):
+                """Render markdown text."""
                 return markdown2.markdown(plain, extras=cls.extras)
 
         all.append(Markdown2)
@@ -80,6 +85,7 @@ if has_module('docutils'):
 
         @classmethod
         def render(cls, plain):
+            """Render reStructuredText text."""
             w = rst_html_writer()
             return docutils.core.publish_parts(plain, writer=w)['body']
 
@@ -97,6 +103,7 @@ if has_module('textile'):
 
         @classmethod
         def render(cls, plain):
+            """Render textile text."""
             return textile.textile(plain)
 
     all.append(Textile)

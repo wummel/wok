@@ -7,7 +7,9 @@ from jinja2.loaders import FileSystemLoader, TemplateNotFound
 from jinja2.loaders import split_template_path
 
 class AmbiguousTemplate(Exception):
+    """Raised if template cannot be determined."""
     pass
+
 
 class GlobFileLoader(FileSystemLoader):
     """
@@ -25,6 +27,7 @@ class GlobFileLoader(FileSystemLoader):
     """
 
     def get_source(self, environment, template):
+        """Get template source."""
         pieces = split_template_path(template)
         for searchpath in self.searchpath:
             globbed_filename = os.path.join(searchpath, *pieces)
@@ -40,6 +43,7 @@ class GlobFileLoader(FileSystemLoader):
 
             mtime = os.path.getmtime(filename)
             def uptodate():
+                """Check if file is uptodate."""
                 try:
                     return os.path.getmtime(filename) == mtime
                 except OSError:
