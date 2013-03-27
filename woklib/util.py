@@ -1,6 +1,35 @@
 import re
+import os
 from unicodedata import normalize
-from datetime import date, time, datetime, timedelta
+from datetime import date, time, datetime
+import importlib
+
+
+def has_module (name):
+    """Test if given module can be imported."""
+    try:
+        importlib.import_module(name)
+        return True
+    except ImportError:
+        return False
+
+
+def is_sane_outdir(dirname, site_root):
+    """Check if a directory can be used as output dir."""
+    if not os.path.isdir(dirname):
+        return False
+    # since all content will be removed in the output dir,
+    # add some extrac precautions
+    d = os.path.realpath(os.path.abspath(dirname))
+    s = os.path.realpath(os.path.abspath(site_root))
+    if d in s:
+        # if d is a substring of s, we would remove the site root
+        # except if it starts with a dot
+        rest = s[len(d):]
+        if not rest.startswith('.'):
+            return False
+    return True
+
 
 # From http://flask.pocoo.org/snippets/5/
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
