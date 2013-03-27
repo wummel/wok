@@ -6,8 +6,7 @@ import subprocess
 from StringIO import StringIO
 import logging
 
-from wok.exceptions import DependencyException
-from wok.util import slugify
+from woklib.util import slugify
 
 try:
     from lxml import etree
@@ -58,13 +57,13 @@ class HeadingAnchors(object):
 
         sio_destination = StringIO()
 
-	# Use the extension of the template to determine the type of document 
-	if page.template.filename.endswith(".html") or page.filename.endswith(".htm"):
-        	logging.debug('[HeadingAnchors] outputting {0} as HTML'.format(page))
-	        tree.write(sio_destination, method='html')
-	else:
-        	logging.debug('[HeadingAnchors] outputting {0} as XML'.format(page))
-	        tree.write(sio_destination)
+        # Use the extension of the template to determine the type of document
+        if page.template.filename.endswith(".html") or page.filename.endswith(".htm"):
+                logging.debug('[HeadingAnchors] outputting {0} as HTML'.format(page))
+                tree.write(sio_destination, method='html')
+        else:
+                logging.debug('[HeadingAnchors] outputting {0} as XML'.format(page))
+                tree.write(sio_destination)
         page.rendered = sio_destination.getvalue()
 
 
@@ -80,7 +79,7 @@ def compile_sass(config, output_dir):
     Serves as a 'site.output.post' wok hook, e.g., your __hooks__.py file might
     look like this:
 
-        from wok.contrib.hooks import compile_sass
+        from woklib.contrib.hooks import compile_sass
 
         hooks = {
             'site.output.post':[compile_sass]
