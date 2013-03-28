@@ -169,6 +169,7 @@ class Engine(object):
 
         # Copy the media directory to the output folder
         if os.path.isdir(self.options['media_dir']):
+            logging.info("Copying media files.")
             try:
                 for name in os.listdir(self.options['media_dir']):
                     path = os.path.join(self.options['media_dir'], name)
@@ -183,9 +184,9 @@ class Engine(object):
 
 
             # Do nothing if the media directory doesn't exist
-            except OSError:
+            except OSError as msg:
                 logging.warning('There was a problem copying the media files '
-                                'to the output directory.')
+                                'to the output directory: %s' % msg)
 
             self.run_hook('site.output.post', self.options['output_dir'])
 
@@ -309,6 +310,7 @@ class Engine(object):
 
             if new_pages:
                 logging.debug('found new_pages')
+                # XXX find a better way to do this
                 self.all_pages += new_pages
 
 if __name__ == '__main__':

@@ -165,20 +165,17 @@ class Page(object):
                 logging.error("A page was generated that is not from a file, "
                         "has no title, and no slug. I don't know what to do. "
                         "Not using this page.")
-                logging.info("Bad Meta's keys: {0}".format(self.meta.keys()))
-                logging.debug("Bad Meta: {0}".format(self.meta))
-                raise BadMetaException()
+                raise BadMetaException("Bad meta: {0}".format(self.meta))
 
         # slug
         if not 'slug' in self.meta:
             if self.filename:
                 filename_no_ext = os.path.splitext(self.filename)[0]
                 self.meta['slug'] = util.slugify(filename_no_ext)
-                logging.info("You didn't specify a slug, generating it from the "
-                             "filename.")
+                logging.debug("No slug specified, generating it from the filename.")
             else:
                 self.meta['slug'] = util.slugify(self.meta['title'])
-                logging.info("You didn't specify a slug, and no filename "
+                logging.debug("No slug specified, and no filename "
                              "exists. Generating the slug from the title.")
 
         elif self.meta['slug'] != util.slugify(self.meta['slug']):
@@ -192,7 +189,7 @@ class Page(object):
         elif isinstance(authors, str):
             self.meta['authors'] = [Author.parse(a) for a in authors.split(',')]
             if len(self.meta['authors']) > 1:
-                logging.warn('Deprecation Warning: Use YAML lists instead of '
+                logging.warning('Deprecation Warning: Use YAML lists instead of '
                         'CSV for multiple authors. i.e. ["John Doe", "Jane '
                         'Smith"] instead of "John Doe, Jane Smith". In '
                         '{0}.'.format(self.path))
@@ -248,7 +245,7 @@ class Page(object):
                 self.meta['tags'] = [t.strip() for t in
                     self.meta['tags'].split(',')]
                 if len(self.meta['tags']) > 1:
-                    logging.warn('Deprecation Warning: Use YAML lists instead '
+                    logging.warning('Deprecation Warning: Use YAML lists instead '
                             'of CSV for multiple tags. i.e. tags: [guide, '
                             'howto] instead of tags: guide, howto. In {0}.'
                             .format(self.path))
@@ -311,8 +308,8 @@ class Page(object):
 
         self.meta['url'] = self.url_pattern.format(**parts)
 
-        logging.info('URL pattern is: {0}'.format(self.url_pattern))
-        logging.info('URL parts are: {0}'.format(parts))
+        logging.debug('URL pattern is: {0}'.format(self.url_pattern))
+        logging.debug('URL parts are: {0}'.format(parts))
 
         # Get rid of extra slashes
         self.meta['url'] = re.sub(r'//+', '/', self.meta['url'])
