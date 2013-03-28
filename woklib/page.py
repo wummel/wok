@@ -138,6 +138,7 @@ class Page(object):
         `page.tags` - Will be a list.
         `page.url` - Will be the url of the page, relative to the web root.
         `page.subpages` - Will be a list containing every sub page of this page
+        `page.encoding` - Will be a string with the page encoding.
         """
 
         self.engine.run_hook('page.meta.pre', self)
@@ -331,13 +332,17 @@ class Page(object):
         # subpages
         self.meta['subpages'] = []
 
+        # encoding
+        if 'encoding' not in self.meta:
+            self.meta['encoding'] = 'utf-8'
+
         self.engine.run_hook('page.meta.post', self)
 
     def render(self, templ_vars=None):
         """
         Renders the page with the template engine.
         """
-        logging.debug('Rendering ' + self.meta['slug'])
+        logging.info('Rendering ' + self.meta['slug'])
         if not templ_vars:
             templ_vars = {}
 
@@ -479,12 +484,9 @@ class Page(object):
             # Probably that the dir already exists, so thats ok.
             # TODO: double check this. Permission errors are something to worry
             # about
-        logging.info('writing to {0}'.format(path))
-
-        logging.debug('Writing {0} to {1}'.format(self.meta['slug'], path))
-        f = open(path, 'w')
-        f.write(self.rendered.encode('utf-8'))
-        f.close()
+        logging.info('Writing {0}'.format(path))
+        with codecs.open(path, 'w', self.meta['encoding']) as f:
+            f.write(self.rendered)
 
     def __repr__(self):
         """Get html-ified page info."""

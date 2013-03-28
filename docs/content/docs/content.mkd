@@ -57,6 +57,7 @@ pages in the YAML metadata.
     configuration file will be used. ([More about managing URLs][URLs])
 -   `pagination` - An object who's presence will trigger paginating this page.
     See [pagination][] for more details.
+-   `encoding` - The page output encoding. The default is `utf-8`.
 
 [8601]: http://en.wikipedia.org/wiki/ISO_8601
 [URLs]: /docs/urls/
