@@ -21,6 +21,7 @@ class Engine(object):
         'content_dir': 'content',
         'template_dir': 'templates',
         'output_dir': 'output',
+        'output_exclude': [],
         'media_dir': 'media',
         'site_title': 'Some random Wok site',
         'url_pattern': '/{category}/{slug}{page}.{ext}',
@@ -100,23 +101,26 @@ class Engine(object):
             csv = authors.split(',')
             self.options['authors'] = [Author.parse(a) for a in csv]
             if len(self.options['authors']) > 1:
-                logging.warn('Deprecation Warning: Use YAML lists instead of '
+                logging.warning('Deprecation Warning: Use YAML lists instead of '
                         'CSV for multiple authors. i.e. ["John Doe", "Jane '
                         'Smith"] instead of "John Doe, Jane Smith". In config '
                         'file.')
 
         if '{type}' in self.options['url_pattern']:
-            logging.warn('Deprecation Warning: You should use {ext} instead '
+            logging.warning('Deprecation Warning: You should use {ext} instead '
                     'of {type} in the url pattern specified in the config '
                     'file.')
 
     def sanity_check(self):
         """Basic sanity checks."""
         # Make sure that this is (probabably) a wok source directory.
-        for name in ('template_dir', 'media_dir', 'content_dir'):
+        for name in ('template_dir', 'content_dir'):
             if not os.path.isdir(self.options[name]):
                 logging.critical("%s %r not found at %s, aborting" % (name, self.options[name], self.site_root))
                 sys.exit(1)
+        # always exclude dotfiles
+        self.options['output_exclude'].append(".*")
+        logging.debug("Using options %s" % self.options)
 
     def load_hooks(self):
         """Load site hooks."""
@@ -124,24 +128,24 @@ class Engine(object):
             sys.path.append('hooks')
             import __hooks__
             self.hooks = __hooks__.hooks
-            logging.info('Loaded {0} hooks: {0}'.format(self.hooks))
+            logging.debug('Loaded {0} hooks: {0}'.format(self.hooks))
         except ImportError as e:
             if "__hooks__" in str(e):
-                logging.info('No hooks module found.')
+                logging.debug('No hooks module found.')
             else:
                 # don't catch import errors raised within a hook
                 raise
 
     def run_hook(self, hook_name, *args):
-        """ Run specified hooks if they exist """
-        logging.debug('Running hook {0}'.format(hook_name))
-        returns = []
-        try:
-            for hook in self.hooks.get(hook_name, []):
-                returns.append(hook(self.options, *args))
-        except AttributeError:
-            logging.info('Hook {0} not defined'.format(hook_name))
-        return returns
+        """ Run specified hook functions if they exist """
+        funcs = self.hooks.get(hook_name, [])
+        logging.debug('Running hook {0} with {1} functions'.format(hook_name, len(funcs)))
+        return [hook(self.options, *args) for hook in funcs]
+
+    def exclude_output(self, filename):
+        """Determine if output filename should be excluded."""
+        return any(fnmatch.fnmatch(filename, pattern)
+            for pattern in self.options['output_exclude'])
 
     def prepare_output(self):
         """
@@ -151,9 +155,7 @@ class Engine(object):
         output = self.options['output_dir']
         if util.is_sane_outdir(output, self.site_root):
             for name in os.listdir(output):
-                if name.startswith("."):
-                    # do not remove dotfiles; useful when output directory
-                    # is a git repository
+                if self.exclude_output(name):
                     continue
                 path = os.path.join(output, name)
                 if os.path.isfile(path):

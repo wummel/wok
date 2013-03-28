@@ -8,6 +8,8 @@ are:
 
 - `output_dir` ('output') - The directory in which to place the generated
   files, e.g., `output_dir: output`.
+- `output_exclude` ([".*"]) - List of filename patterns to not delete in the
+  output directory. Files starting with a dot are never deleted.
 - `content_dir` ('content') - The directory where content files are stored,
   e.g., `content_dir: content`.
 - `templates_dir` ('templates') - The directory where templates are stored,
