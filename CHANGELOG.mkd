@@ -5,11 +5,24 @@ In which contributors rock.
 ### Features
 -   The built in development server now auto reloads when files changes.
     [robatron].
--   A new contributed hook, `wok.contrib.hooks.compile_sass`, that does exactly
+-   A new contributed hook, `woklib.contrib.hooks.compile_sass`, that does exactly
     what it says on the tin [robatron].
+-   The configuration file and the meta data in content pages can now include
+    external files with the !include directive.
+-   Each page can override its output encoding with the `encoding` meta option.
+    The default page encoding is `utf-8`.
+-   Files in the output directory are not deleted if they match one of the patterns
+    in the new configuration directive `output_exclude`.
+
+### Changes
+-   The default `config` file has been renamed to `wokconfig`. The old filename
+    is still working but deprecated.
+-   The `wok` python module has been renamed to `woklib`.
+-   Files in the output directory that start with a dot are never deleted.
 
 ### Fixes
 -   The hook `site.output.post` is now only run once, not once per file.
+-   Hook attribute errors are not silently discarded anymore.
 
 Version 0.9
 -----------
