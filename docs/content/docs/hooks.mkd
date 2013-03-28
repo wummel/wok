@@ -9,7 +9,7 @@ directory, make the file `__hooks__.py`. For example:
 
     ::text
     site-root/
-        |-- config
+        |-- wokconfig
         |-- content/
         |-- hooks/
         |   |-- __hooks__.py
