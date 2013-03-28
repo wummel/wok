@@ -3,7 +3,11 @@
 
 import os
 import subprocess
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    # Python 3
+    from io import StringIO
 import logging
 
 from woklib.util import slugify

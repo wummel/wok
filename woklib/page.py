@@ -364,7 +364,7 @@ class Page(object):
 
         # ... and actions! (and logging, and hooking)
         self.engine.run_hook('page.template.pre', self, templ_vars)
-        logging.debug('templ_vars.keys(): ' + repr(templ_vars.keys()))
+        logging.debug('templ_vars.keys(): ' + repr(list(templ_vars.keys())))
         self.rendered = self.template.render(templ_vars)
         logging.debug('extra pages is: ' + repr(extra_pages))
         self.engine.run_hook('page.template.post', self)

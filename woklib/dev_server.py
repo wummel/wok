@@ -17,8 +17,13 @@ property) and `base.css` can be accessed from anywhere.
 '''
 from __future__ import print_function
 import os
-from BaseHTTPServer import HTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+try:
+    from BaseHTTPServer import HTTPServer
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+except ImportError:
+    # Python 3
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
+
 
 class DevServer(object):
     """Simple development HTTP server."""

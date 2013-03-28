@@ -53,7 +53,7 @@ def slugify(text, delim=u'-'):
 
 def chunk(li, n):
     """Yield succesive n-size chunks from l."""
-    for i in xrange(0, len(li), n):
+    for i in range(0, len(li), n):
         yield li[i:i+n]
 
 
