@@ -8,12 +8,12 @@ import codecs
 
 # Libraries
 import jinja2
-import yaml
 import re
 
 # Wok
 from . import util, renderers
 from .jinja import GlobFileLoader, AmbiguousTemplate
+from .yamlutil import load_stream
 
 class Page(object):
     """
@@ -101,7 +101,7 @@ class Page(object):
 
             elif len(splits) == 2:
                 header = splits[0]
-                page.meta = yaml.safe_load(header)
+                page.meta = load_stream(header)
                 page.original = splits[1]
                 page.original_preview = page.meta.get('preview', '')
 
@@ -110,7 +110,7 @@ class Page(object):
                 page.meta = {}
                 page.original = '\n'.join(splits[1:])
                 page.original_preview = splits[1]
-                page.meta.update(yaml.safe_load(header))
+                page.meta.update(load_stream(header))
                 logging.debug('Got preview')
 
         page.build_meta()

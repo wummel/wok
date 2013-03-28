@@ -2,14 +2,14 @@
 import os
 import sys
 import shutil
-import codecs
+import fnmatch
 from datetime import datetime
 import logging
 
-import yaml
 from . import renderers, util
 from .page import Page, Author
 from .dev_server import DevServer
+from .yamlutil import load_file
 
 
 class Engine(object):
@@ -34,7 +34,7 @@ class Engine(object):
             self.site_root = os.getcwd()
         else:
             self.site_root = site_root
-        self.config = 'wokconfig'
+        self.config = config
 
     def run(self, server=None):
         """Generate site or run dev server."""
@@ -85,15 +85,14 @@ class Engine(object):
     def read_options(self):
         """Load options from the config file."""
         self.options = Engine.default_options.copy()
+        # backwards compatibility: load 'config' file
+        if os.path.isfile('config'):
+            logging.warning("Using deprecated `config' file instead of `%s'" % self.config)
+            self.options.update(load_file('config'))
+        else:
+            self.options.update(load_file(self.config))
 
-        if os.path.isfile(self.config):
-            with codecs.open(self.config, 'r', 'utf-8') as f:
-                yaml_config = yaml.safe_load(f)
-
-            if yaml_config:
-                self.options.update(yaml_config)
-
-        # Make authors a list, even only a single author was specified.
+        # Make authors a list, even when only a single author was specified.
         authors = self.options.get('authors', self.options.get('author', None))
         if isinstance(authors, list):
             self.options['authors'] = [Author.parse(a) for a in authors]
