@@ -468,24 +468,17 @@ class Page(object):
 
     def write(self):
         """Write the page to a rendered file on disk."""
-
-        # Use what we are passed, or the default given, or the current dir
-        path = self.options.get('output_dir', '.')
-        url = self.meta['url']
-        if url and url[0] == '/':
-            url = url[1:]
-        path = os.path.join(path, url)
+        output = self.options['output_dir']
+        path = self.meta['url']
+        if path.startswith('/'):
+            path = path[1:]
         if path.endswith('/'):
             path += 'index.' + self.meta['ext']
-
-        try:
-            os.makedirs(os.path.dirname(path))
-        except OSError as e:
-            logging.debug('makedirs failed for {0}: {1}'.format(
-                os.path.basename(path), e))
-            # Probably that the dir already exists, so thats ok.
-            # TODO: double check this. Permission errors are something to worry
-            # about
+        path = path.replace('/', os.sep)
+        path = os.path.join(output, path)
+        parent = os.path.dirname(path)
+        if not os.path.exists(parent):
+            os.makedirs(parent)
         logging.info('Writing {0}'.format(path))
         with codecs.open(path, 'w', self.meta['encoding']) as f:
             f.write(self.rendered)
