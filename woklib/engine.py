@@ -153,6 +153,13 @@ class Engine(object):
         then copy over the media files, if they exist.
         """
         output = self.options['output_dir']
+        self.clean_output(output)
+        self.run_hook('site.output.pre', output)
+        self.copy_media(output)
+        self.run_hook('site.output.post', output)
+
+    def clean_output(self, output):
+        """Remove files in output directory."""
         if util.is_sane_outdir(output, self.site_root):
             for name in os.listdir(output):
                 if self.exclude_output(name):
@@ -165,30 +172,23 @@ class Engine(object):
         else:
             os.makedirs(output)
 
-        self.run_hook('site.output.pre', output)
-
-        # Copy the media directory to the output folder
-        if os.path.isdir(self.options['media_dir']):
-            logging.info("Copying media files.")
-            try:
-                for name in os.listdir(self.options['media_dir']):
-                    path = os.path.join(self.options['media_dir'], name)
-                    if os.path.isdir(path):
-                        shutil.copytree(
-                                path,
-                                os.path.join(self.options['output_dir'], name),
-                                symlinks=True
-                        )
-                    else:
-                        shutil.copy(path, self.options['output_dir'])
-
-
-            # Do nothing if the media directory doesn't exist
-            except OSError as msg:
-                logging.warning('There was a problem copying the media files '
-                                'to the output directory: %s' % msg)
-
-            self.run_hook('site.output.post', self.options['output_dir'])
+    def copy_media(self, output):
+        """Copy the media directory to the output folder"""
+        media = self.options['media_dir']
+        if not os.path.isdir(media):
+            # no media directory found
+            return
+        logging.info("Copying media files.")
+        for name in os.listdir(media):
+            path = os.path.join(media, name)
+            if os.path.isdir(path):
+                shutil.copytree(
+                        path,
+                        os.path.join(output, name),
+                        symlinks=True
+                )
+            else:
+                shutil.copy(path, output)
 
     def load_pages(self):
         """Load all the content files."""
