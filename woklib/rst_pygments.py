@@ -75,9 +75,11 @@ class Pygments(Directive):
         except ValueError:
             # no lexer found - use the text one instead of an exception
             lexer = TextLexer()
-        # take an arbitrary option if more than one is given
-        key = list(self.options.keys())[0]
-        formatter = self.options and VARIANTS[key] or DEFAULT
+        formatter = DEFAULT
+        if self.options:
+            # take an arbitrary option if more than one is given
+            key = list(self.options.keys())[0]
+            formatter = VARIANTS[key]
         parsed = highlight(u'\n'.join(self.content), lexer, formatter)
         return [nodes.raw('', parsed, format='html')]
 
