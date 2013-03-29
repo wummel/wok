@@ -104,5 +104,5 @@ def get_rooturl(url):
     if level < 0:
         raise ValueError('Invalid page URL %r' % url)
     if level:
-        return '../' * level
+        return ('../' * level).rstrip('/')
     return '.'
