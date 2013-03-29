@@ -111,6 +111,11 @@ class Engine(object):
                     'of {type} in the url pattern specified in the config '
                     'file.')
 
+        # expand user for directories
+        for name in ('template_dir', 'content_dir', 'output_dir', 'media_dir'):
+            if name in self.options:
+                self.options[name] = os.path.expanduser(self.options[name])
+
     def sanity_check(self):
         """Basic sanity checks."""
         # Make sure that this is (probabably) a wok source directory.

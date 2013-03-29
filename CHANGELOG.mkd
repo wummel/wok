@@ -13,6 +13,10 @@ In which contributors rock.
     The default page encoding is `utf-8`.
 -   Files in the output directory are not deleted if they match one of the patterns
     in the new configuration directive `output_exclude`.
+-   Pages have a new `page.rooturl` variable which is a relative URL pointing
+    to the site root.
+-   Directory names in the configuration file expand `~` or `~user` to the
+    username.
 
 ### Changes
 -   The default `config` file has been renamed to `wokconfig`. The old filename
