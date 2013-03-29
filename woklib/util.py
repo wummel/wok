@@ -89,3 +89,20 @@ def date_and_times(meta):
         meta['datetime'] = datetime(date_part.year, date_part.month, date_part.day)
     else:
         meta['datetime'] = None
+
+
+def get_rooturl(url):
+    """Get relative root URL for given page URL.
+    Example: /dir1/dir2/page.html -> ../../
+    """
+    if url == '/':
+        return '.'
+    parts = url.strip('/').split('/')
+    level = len(parts)
+    if not url.endswith('/'):
+        level -= 1
+    if level < 0:
+        raise ValueError('Invalid page URL %r' % url)
+    if level:
+        return '../' * level
+    return '.'

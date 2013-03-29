@@ -126,19 +126,20 @@ class Page(object):
         """
         Ensures the guarantees about metadata for documents are valid.
 
-        `page.title` - Will be a string.
-        `page.slug` - Will be a string.
-        `page.author` - Will have fields `name` and `email`.
-        `page.authors` - Will be a list of Authors.
-        `page.category` - Will be a list.
-        `page.published` - Will exist.
-        `page.datetime` - Will be a datetime, or None.
-        `page.date` - Will be a date, or None.
-        `page.time` - Will be a time, or None.
-        `page.tags` - Will be a list.
-        `page.url` - Will be the url of the page, relative to the web root.
-        `page.subpages` - Will be a list containing every sub page of this page
-        `page.encoding` - Will be a string with the page encoding.
+        `page.title` - A string.
+        `page.slug` - A string.
+        `page.author` - Fields `name` and `email`.
+        `page.authors` - A list of Authors.
+        `page.category` - A list.
+        `page.published` - The publishing date.
+        `page.datetime` - A datetime, or None.
+        `page.date` - A date, or None.
+        `page.time` - A time, or None.
+        `page.tags` - A list.
+        `page.url` - The url of the page, relative to the web root.
+        `page.rooturl` - The relative URL to the web root.
+        `page.subpages` - A list containing every sub page of this page.
+        `page.encoding` - A string with the page encoding.
         """
 
         self.engine.run_hook('page.meta.pre', self)
@@ -313,6 +314,10 @@ class Page(object):
 
         # Get rid of extra slashes
         self.meta['url'] = re.sub(r'//+', '/', self.meta['url'])
+
+        # set relative root url
+        self.meta['rooturl'] = util.get_rooturl(self.meta['url'])
+        logging.debug('Root URL is %r' % self.meta['rooturl'])
 
         # If we have been asked to, rip out any plain "index.html"s
         if not self.options['url_include_index']:
