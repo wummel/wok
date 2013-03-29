@@ -470,16 +470,17 @@ class Page(object):
         """Write the page to a rendered file on disk."""
         output = self.options['output_dir']
         path = self.meta['url']
+        logging.debug('Write path URL %r' % path)
+        if not path or path.endswith('/'):
+            path += 'index.' + self.meta['ext']
         if path.startswith('/'):
             path = path[1:]
-        if path.endswith('/'):
-            path += 'index.' + self.meta['ext']
         path = path.replace('/', os.sep)
         path = os.path.join(output, path)
+        logging.info('Writing {0}'.format(path))
         parent = os.path.dirname(path)
         if not os.path.exists(parent):
             os.makedirs(parent)
-        logging.info('Writing {0}'.format(path))
         with codecs.open(path, 'w', self.meta['encoding']) as f:
             f.write(self.rendered)
 
