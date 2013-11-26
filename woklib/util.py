@@ -34,7 +34,7 @@ def is_sane_outdir(dirname, site_root):
 
 
 # From http://flask.pocoo.org/snippets/5/
-_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
+_punct_re = re.compile(r'[\t !"#$%&()*\-/<=>?@\[\\\]^_`{|},.]+')
 def slugify(text, delim=u'-'):
     """
     Generates a slug that will only use ASCII, be all lowercase, have no
@@ -45,8 +45,11 @@ def slugify(text, delim=u'-'):
         text = unicode(text)
     # normalize to ASCII
     text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    # remove apostrophes
+    text = text.replace("'", "")
     # lowercase
     text = text.lower()
+    # split in words in rejoin
     words = [word for word in _punct_re.split(text) if word]
     return delim.join(words).strip(delim)
 

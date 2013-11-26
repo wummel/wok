@@ -38,5 +38,5 @@ class TestSlugs(TestCase):
     def test_apostrophes(self):
         """Check that apostrophes in words don't end up as ugly seperators"""
         orig = u"Don't use Bob's stuff"
-        slug = u'don-t-use-bob-s-stuff'
+        slug = u'dont-use-bobs-stuff'
         self.assertEqual(slug, util.slugify(orig))
