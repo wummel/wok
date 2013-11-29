@@ -27,6 +27,7 @@ class Engine(object):
         'url_pattern': '/{category}/{slug}{page}.{ext}',
         'url_include_index': True,
         'relative_urls': False,
+        'extra_plugins_markdown': [],
     }
 
     def __init__(self, site_root=None, config='wokconfig'):
@@ -76,6 +77,7 @@ class Engine(object):
         """Generate the wok site"""
         self.all_pages = []
         self.load_hooks()
+        self.renderer_options()
         self.run_hook('site.start')
         self.prepare_output()
         self.load_pages()
@@ -115,6 +117,19 @@ class Engine(object):
         for name in ('template_dir', 'content_dir', 'output_dir', 'media_dir'):
             if name in self.options:
                 self.options[name] = os.path.expanduser(self.options[name])
+
+    def renderer_options(self):
+        """Add extra plugins in markdown renderers from config file."""
+        extra_plugins_markdown = self.options.get('extra_plugins_markdown', [])
+        if extra_plugins_markdown:
+            if hasattr(renderers, 'Markdown'):
+                renderers.Markdown.plugins.extend(extra_plugins_markdown)
+                logging.debug('Activated extra Markdown plugins %s' % extra_plugins_markdown)
+            elif hasattr(renderers, 'Markdown2'):
+                renderers.Markdown2.plugins.extend(extra_plugins_markdown)
+                logging.debug('Activated extra Markdown2 plugins %s' % extra_plugins_markdown)
+            else:
+                logging.warning('Extra markdown plugins %s but no Markdown or Markdown2 renderer found.' % extra_plugins_markdown)
 
     def sanity_check(self):
         """Basic sanity checks."""
