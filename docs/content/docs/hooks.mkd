@@ -4,7 +4,9 @@ category: docs
 Since version 0.9, wok provides a hook interface to add custom python code to
 the site generation pipeline.
 
-To use hooks, make a new directory in your site root named `hooks`. In this 
+Before starting to programm, check the [wok_hooks project][wok_hooks] for already available plugins.
+
+To use hooks, make a new directory in your site root named `hooks`. In this
 directory, make the file `__hooks__.py`. For example:
 
     ::text
@@ -21,9 +23,9 @@ directory, make the file `__hooks__.py`. For example:
         `-- templates/
 
 
-From the `__hooks__.py` file, wok will import the variable `hooks`. 
-This should be a dictionary; The keys are the hook names below, and the values 
-are lists of functions (or other callables) to run for the hooks. Simply give 
+From the `__hooks__.py` file, wok will import the variable `hooks`.
+This should be a dictionary; The keys are the hook names below, and the values
+are lists of functions (or other callables) to run for the hooks. Simply give
 the names of the functions, but do not invoke them. For example:
 
     ::python
@@ -144,7 +146,7 @@ will pass to the hooked functions (if any.)
     :   Dictionary containing site configuration
 :   `page`
     :   The current page object that is being processed.
-:   This hook will be called for each page before the page has it's meta data
+:   This hook will be called for each page before the page has its metadata
     filled in. Some metadata will exist, but it will be in an unnormalized
     state.
 
@@ -153,8 +155,8 @@ will pass to the hooked functions (if any.)
     :   Dictionary containing site configuration
 :   `page`
     :   The current page object that is being processed.
-:   This hook will be called for each page right after the page has it's meta
-    data filled in and normalized.
+:   This hook will be called for each page right after the page has its
+    metadata filled in and normalized.
 
 `page.template.pre(config, page, templ_vars)` <a name="page.template.pre"> </a>
 :   `config`
@@ -167,14 +169,14 @@ will pass to the hooked functions (if any.)
 :   This hook will be called for each page before the page is sent to
     the template engine. At this point, the content has been transformed
     from markup input (such as markdown) to html output, if applicable.
-    The transformed version is in `templ_vars['content']`. If you
+    The transformed version is in `templ_vars['page']['content']`. If you
     modify the `templ_vars` parameter, those changes will be visible to
     the template engine. The given functions should take in these two
     variables.
 
 [templates]: /docs/templates/
 
-`page.template.post(config, page)` <a name="page.template.postpage"> </a>
+`page.template.post(config, page)` <a name="page.template.post"> </a>
 :   `config`
     :   Dictionary containing site configuration
 :   `page`
@@ -190,3 +192,5 @@ will pass to the hooked functions (if any.)
     any general modifications to the output, or to do something like upload the
     site for distribution. If the `--server` option has been specified, this
     will happen before the server is run.
+
+[wok_hooks]: https://github.com/abbgrade/wok_hooks

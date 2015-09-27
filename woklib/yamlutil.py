@@ -42,3 +42,9 @@ def load_file(filename):
         with codecs.open(filename, 'r', YamlEncoding) as f:
             return load_stream(f)
     return {}
+
+
+def write_file(filename, content):
+    """Write options to a YAML file."""
+    with codecs.open(filename, 'w', YamlEncoding) as f:
+        yaml.dump(content, f)

@@ -59,7 +59,7 @@ class MyInstallLib (install_lib, object):
             else:
                 val = getattr(cmd_obj, attr)
             if attr == 'install_data':
-                cdir = os.path.join(val, "share", "dosage")
+                cdir = os.path.join(val, "share", "wok")
                 data.append('config_dir = %r' % cnormpath(cdir))
             elif attr == 'install_lib':
                 if cmd_obj.root:
@@ -90,7 +90,7 @@ class MyDistribution (Distribution, object):
     def __init__ (self, attrs):
         """Set console and windows scripts."""
         super(MyDistribution, self).__init__(attrs)
-        self.console = ['dosage']
+        self.console = ['wok']
 
     def run_commands (self):
         """Generate config file and run commands."""
@@ -134,6 +134,8 @@ setup(
     version=AppVersion,
     author='Mike Cooper',
     author_email='mythmon@gmail.com',
+    maintainer='Bastian Kleineidam',
+    maintainer_email='bastian.kleineidam@web.de',
     url='http://wok.mythmon.com',
     description='Static site generator',
     long_description=
@@ -155,4 +157,11 @@ setup(
     ),
     packages=['woklib'],
     scripts=['wok'],
+    install_requires=[
+        'Jinja2>=2.6',
+        'Markdown>=2.1.1',
+        'PyYAML>=3.10',
+        'Pygments>=1.4',
+        'docutils>=0.8.1',
+    ],
 )

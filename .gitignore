@@ -1,10 +1,9 @@
 .*.swp
 *.pyc
 *.pyo
+*/output
 /build
 /MANIFEST
-/test_site/output
-/docs/output
 _trial_temp
 /dist
 /bin
@@ -13,3 +12,5 @@ _trial_temp
 /todo
 /testresults.txt
 /_wok_configdata.py
+/venv/
+/wok.egg-info/

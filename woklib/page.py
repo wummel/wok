@@ -17,8 +17,8 @@ from .yamlutil import load_stream
 
 class Page(object):
     """
-    A single page on the website in all it's form (raw, rendered, templated) ,
-    as well as it's associated metadata.
+    A single page on the website in all its form (raw, rendered, templated),
+    as well as its associated metadata.
     """
 
     tmpl_env = None
@@ -93,7 +93,7 @@ class Page(object):
                                 'than expected. Squashing the extra together.'
                                 .format(page.path))
 
-            # Handle the case where no meta data was provided
+            # Handle the case where no metadata was provided.
             if len(splits) == 1:
                 page.original = splits[0]
                 page.meta = {}
@@ -170,13 +170,14 @@ class Page(object):
 
         # slug
         if not 'slug' in self.meta:
-            if self.filename:
+            if self.filename and self.options['slug_from_filename']:
                 filename_no_ext = os.path.splitext(self.filename)[0]
                 self.meta['slug'] = util.slugify(filename_no_ext)
-                logging.debug("No slug specified, generating it from the filename.")
+                logging.info("You didn't specify a slug, generating it from the "
+                             "filename.")
             else:
                 self.meta['slug'] = util.slugify(self.meta['title'])
-                logging.debug("No slug specified, and no filename "
+                logging.info("You didn't specify a slug, and no filename "
                              "exists. Generating the slug from the title.")
 
         elif self.meta['slug'] != util.slugify(self.meta['slug']):
@@ -323,6 +324,12 @@ class Page(object):
         if not self.options['url_include_index']:
             self.meta['url'] = re.sub(r'/index\.html$', '/', self.meta['url'])
 
+        # To be used for writing page content
+        self.meta['path'] = self.meta['url']
+        # If site is going to be in a subdirectory
+        if self.options.get('url_subdir'):
+            self.meta['url'] = self.options['url_subdir'] + self.meta['url']
+
         # Some urls should start with /, some should not.
         if self.options['relative_urls'] and self.meta['url'][0] == '/':
             self.meta['url'] = self.meta['url'][1:]
@@ -468,16 +475,16 @@ class Page(object):
 
     def write(self):
         """Write the page to a rendered file on disk."""
-        output = self.options['output_dir']
-        path = self.meta['url']
+        output_dir = self.options['output_dir']
+        path = self.meta['path']
         logging.debug('Write path URL %r' % path)
         if not path or path.endswith('/'):
             path += 'index.' + self.meta['ext']
         if path.startswith('/'):
             path = path[1:]
         path = path.replace('/', os.sep)
-        path = os.path.join(output, path)
-        logging.info('Writing {0}'.format(path))
+        path = os.path.join(output_dir, path)
+        logging.info('Writing to {0}'.format(path))
         parent = os.path.dirname(path)
         if not os.path.exists(parent):
             os.makedirs(parent)

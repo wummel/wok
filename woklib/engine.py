@@ -9,7 +9,7 @@ import logging
 from . import renderers, util
 from .page import Page, Author
 from .dev_server import DevServer
-from .yamlutil import load_file
+from .yamlutil import load_file, write_file
 
 
 class Engine(object):
@@ -26,8 +26,9 @@ class Engine(object):
         'site_title': 'Some random Wok site',
         'url_pattern': '/{category}/{slug}{page}.{ext}',
         'url_include_index': True,
+        'slug_from_filename': False,
         'relative_urls': False,
-        'extra_plugins_markdown': [],
+        'markdown_extra_plugins': [],
     }
 
     def __init__(self, site_root=None, config='wokconfig'):
@@ -38,11 +39,13 @@ class Engine(object):
             self.site_root = site_root
         self.config = config
 
-    def run(self, server=None):
+    def run(self, server=None, init_site_title=None):
         """Generate site or run dev server."""
         orig_dir = os.getcwd()
         try:
             os.chdir(self.site_root)
+            if init_site_title:
+                self.init_site(init_site_title)
             self.read_options()
             self.sanity_check()
             if server:
@@ -51,6 +54,24 @@ class Engine(object):
                self.generate_site()
         finally:
             os.chdir(orig_dir)
+
+    def init_site(self, site_title):
+        ''' Create the config file and the required directories.'''
+        # check if config is already present
+        if os.path.isfile(self.config):
+            logging.warn("Config file %r found; site is already initialized." % self.config)
+            return
+
+        # create config
+        options = self.default_options.copy()
+        options['site_title'] = site_title
+        write_file(self.config, options)
+
+        # create required dirs
+        required_dirs = [options['content_dir'], options['template_dir']]
+        for required_dir in required_dirs:
+            if not os.path.isdir(required_dir):
+                os.mkdir(required_dir)
 
     def start_server(self, hostport):
         ''' Run the dev server if the user said to, and watch the specified
@@ -77,7 +98,9 @@ class Engine(object):
         """Generate the wok site"""
         self.all_pages = []
         self.load_hooks()
+        self.load_renderers()
         self.renderer_options()
+
         self.run_hook('site.start')
         self.prepare_output()
         self.load_pages()
@@ -88,12 +111,7 @@ class Engine(object):
     def read_options(self):
         """Load options from the config file."""
         self.options = Engine.default_options.copy()
-        # backwards compatibility: load 'config' file
-        if os.path.isfile('config'):
-            logging.warning("Using deprecated `config' file instead of `%s'" % self.config)
-            self.options.update(load_file('config'))
-        else:
-            self.options.update(load_file(self.config))
+        self.options.update(load_file(self.config))
 
         # Make authors a list, even when only a single author was specified.
         authors = self.options.get('authors', self.options.get('author', None))
@@ -120,16 +138,16 @@ class Engine(object):
 
     def renderer_options(self):
         """Add extra plugins in markdown renderers from config file."""
-        extra_plugins_markdown = self.options.get('extra_plugins_markdown', [])
-        if extra_plugins_markdown:
+        markdown_extra_plugins = self.options.get('markdown_extra_plugins', [])
+        if markdown_extra_plugins:
             if hasattr(renderers, 'Markdown'):
-                renderers.Markdown.plugins.extend(extra_plugins_markdown)
-                logging.debug('Activated extra Markdown plugins %s' % extra_plugins_markdown)
+                renderers.Markdown.plugins.extend(markdown_extra_plugins)
+                logging.debug('Activated extra Markdown plugins %s' % markdown_extra_plugins)
             elif hasattr(renderers, 'Markdown2'):
-                renderers.Markdown2.plugins.extend(extra_plugins_markdown)
-                logging.debug('Activated extra Markdown2 plugins %s' % extra_plugins_markdown)
+                renderers.Markdown2.plugins.extend(markdown_extra_plugins)
+                logging.debug('Activated extra Markdown2 plugins %s' % markdown_extra_plugins)
             else:
-                logging.warning('Extra markdown plugins %s but no Markdown or Markdown2 renderer found.' % extra_plugins_markdown)
+                logging.warning('Extra markdown plugins %s but no Markdown or Markdown2 renderer found.' % markdown_extra_plugins)
 
     def sanity_check(self):
         """Basic sanity checks."""
@@ -154,6 +172,25 @@ class Engine(object):
                 logging.debug('No hooks module found.')
             else:
                 # don't catch import errors raised within a hook
+                logging.info('Import error within hooks.')
+                raise
+
+    def load_renderers(self):
+        self.renderers = {}
+        for renderer in renderers.all:
+            self.renderers.update((ext, renderer) for ext in renderer.extensions)
+
+        try:
+            sys.path.append('renderers')
+            import __renderers__
+            self.renderers.update(__renderers__.renderers)
+            logging.info('Loaded {0} renderers'.format(len(__renderers__.renderers)))
+        except ImportError as e:
+            if "__renderers__" in str(e):
+                logging.info('No renderers module found.')
+            else:
+                # don't catch import errors raised within a renderer
+                logging.info('Import error within renderers.')
                 raise
 
     def run_hook(self, hook_name, *args):
@@ -164,6 +201,9 @@ class Engine(object):
 
     def exclude_output(self, filename):
         """Determine if output filename should be excluded."""
+        if filename.startswith("."):
+            # exclude dotfiles per default
+            return True
         return any(fnmatch.fnmatch(filename, pattern)
             for pattern in self.options['output_exclude'])
 
@@ -194,13 +234,13 @@ class Engine(object):
 
     def copy_media(self, output):
         """Copy the media directory to the output folder"""
-        media = self.options['media_dir']
-        if not os.path.isdir(media):
+        media_dir = self.options['media_dir']
+        if not os.path.isdir(media_dir):
             # no media directory found
             return
         logging.info("Copying media files.")
-        for name in os.listdir(media):
-            path = os.path.join(media, name)
+        for name in os.listdir(media_dir):
+            path = os.path.join(media_dir, name)
             if os.path.isdir(path):
                 shutil.copytree(
                         path,
@@ -226,13 +266,9 @@ class Engine(object):
                     continue
 
                 ext = f.split('.')[-1]
-                renderer = renderers.Plain
+                renderer = self.renderers.get(ext)
 
-                for r in renderers.all:
-                    if ext in r.extensions:
-                        renderer = r
-                        break
-                else:
+                if renderer is None:
                     logging.warning('No parser found '
                             'for {0}. Using default renderer.'.format(f))
                     renderer = renderers.Renderer

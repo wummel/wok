@@ -1,10 +1,10 @@
 # -*- coding: iso-8859-1 -*-
 from __future__ import print_function
+import logging
 from .util import has_module
 
-
 if not has_module('pygments'):
-    print('Pygments not enabled.')
+    logging.warn('Pygments not enabled.')
 
 # List of available renderers
 all = []
@@ -38,8 +38,7 @@ if has_module('markdown'):
 
         plugins = ['def_list', 'footnotes']
         if has_module('pygments'):
-            plugins.append('codehilite(css_class=codehilite)')
-            plugins.append('fenced_code')
+            plugins.extend(['codehilite(css_class=codehilite)', 'fenced_code'])
 
         @classmethod
         def render(cls, plain):
@@ -48,7 +47,8 @@ if has_module('markdown'):
 
     all.append(Markdown)
 else:
-    print("markdown isn't available, trying markdown2")
+    logging.warn("markdown isn't available, trying markdown2")
+    # Try Markdown2
     if has_module('markdown2'):
         import markdown2
         class Markdown2(Renderer):
@@ -66,7 +66,7 @@ else:
 
         all.append(Markdown2)
     else:
-        print('Markdown not enabled.')
+        logging.warn('Markdown not enabled.')
 
 
 # Include ReStructuredText Parser, if we have docutils
@@ -91,7 +91,7 @@ if has_module('docutils'):
 
     all.append(ReStructuredText)
 else:
-    print('reStructuredText not enabled.')
+    logging.warn('reStructuredText not enabled.')
 
 
 # Try Textile
@@ -108,11 +108,11 @@ if has_module('textile'):
 
     all.append(Textile)
 else:
-    print('Textile not enabled.')
+    logging.warn('Textile not enabled.')
 
 
 if len(all) <= 2:
-    print("You probably want to install either a Markdown library (one of "
+    logging.error("You probably want to install either a Markdown library (one of "
           "'Markdown', or 'markdown2'), 'docutils' (for reStructuredText), or "
           "'textile'. Otherwise only plain text input will be supported.  You "
           "can install any of these with 'sudo pip install PACKAGE'.")

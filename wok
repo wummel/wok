@@ -3,15 +3,20 @@
 import sys
 import logging
 import argparse
-from _wok_configdata import description
+from _wok_configdata import (description as AppDescription,
+  name as AppName, version as AppVersion)
 from woklib.engine import Engine
 
 
 def setup_parser():
     """Construct CLI argument parser."""
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=AppDescription)
     parser.add_argument('--server', action='store',
             help="run a development server instead of generating the site")
+    parser.add_argument('--init-site', action='store',
+            help="initialize a default configuration with given site title")
+    version = "%s %s" % (AppName, AppVersion)
+    parser.add_argument('--version', action='version', version=version)
 
     # Options for noisiness level and logging
     group = parser.add_argument_group("Logging",
@@ -50,7 +55,7 @@ def main():
 
     logging.basicConfig(**logging_options)
     engine = Engine()
-    engine.run(server=options.server)
+    engine.run(init_site_title=options.init_site, server=options.server)
 
 
 if __name__ == '__main__':

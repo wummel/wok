@@ -4,6 +4,7 @@ from datetime import date, time, datetime
 
 from woklib.util import date_and_times
 
+
 class TestDatetimes(TestCase):
 
     def setUp(self):
@@ -39,11 +40,12 @@ class TestDatetimes(TestCase):
         self.assertEqual(inp, out)
 
     def test_just_time(self):
-        inp = {'time': self.time}
+        t = self.time # otherwise the datetime line gets awful
+        inp = {'time': t}
         out = {
             'datetime': None,
             'date': None,
-            'time': self.time,
+            'time': t,
         }
         date_and_times(inp)
         self.assertEqual(inp, out)
