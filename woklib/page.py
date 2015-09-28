@@ -167,6 +167,9 @@ class Page(object):
                         "has no title, and no slug. I don't know what to do. "
                         "Not using this page.")
                 raise BadMetaException("Bad meta: {0}".format(self.meta))
+        else:
+            # Yaml parses some values as integers (eg. 404.mkd)
+            self.meta['title'] = util.ensure_string(self.meta['title'])
 
         # slug
         if not 'slug' in self.meta:

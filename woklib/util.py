@@ -109,3 +109,14 @@ def get_rooturl(url):
     if level:
         return ('../' * level).rstrip('/')
     return '.'
+
+
+def ensure_string(obj):
+    """Convert given object to its string representation."""
+    try:
+        text_type = unicode
+    except NameError:
+        text_type = str
+    if not isinstance(obj, text_type):
+        return text_type(obj)
+    return obj
