@@ -40,7 +40,5 @@ localbuild:
 
 test:	localbuild
 	$(PYTHON) -m pytest $(PYTESTOPTS) $(TESTOPTS) $(TESTS)
-	cd test_site && ../wok
-	cd docs && ../wok
 
 .PHONY: test clean pyflakes check all doccheck localbuild
