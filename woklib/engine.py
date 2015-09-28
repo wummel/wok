@@ -114,23 +114,12 @@ class Engine(object):
         self.options.update(load_file(self.config))
 
         # Make authors a list, even when only a single author was specified.
-        authors = self.options.get('authors', self.options.get('author', None))
-        if isinstance(authors, list):
-            self.options['authors'] = [Author.parse(a) for a in authors]
-        elif isinstance(authors, str):
-            csv = authors.split(',')
-            self.options['authors'] = [Author.parse(a) for a in csv]
-            if len(self.options['authors']) > 1:
-                logging.warning('Deprecation Warning: Use YAML lists instead of '
-                        'CSV for multiple authors. i.e. ["John Doe", "Jane '
-                        'Smith"] instead of "John Doe, Jane Smith". In config '
-                        'file.')
-
-        if '{type}' in self.options['url_pattern']:
-            logging.warning('Deprecation Warning: You should use {ext} instead '
-                    'of {type} in the url pattern specified in the config '
-                    'file.')
-
+        authors = []
+        if 'author' in self.options:
+            authors.append(self.options['author'])
+        if 'authors' in self.options:
+            authors.extend(self.options['authors'])
+        self.options['authors'] = [Author.parse(a) for a in authors]
         # expand user for directories
         for name in ('template_dir', 'content_dir', 'output_dir', 'media_dir'):
             if name in self.options:
