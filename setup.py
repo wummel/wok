@@ -9,7 +9,7 @@ from distutils.file_util import write_file
 
 
 AppName = 'wok'
-AppVersion = '1.1'
+AppVersion = '1.1.1'
 
 def normpath (path):
     """Norm a path name to platform specific notation."""
