@@ -2,14 +2,10 @@ import os
 import shutil
 import sys
 import tempfile
+from unittest import TestCase
 
-try:
-    from twisted.trial.unittest import TestCase
-except ImportError:
-    from unittest import TestCase
-
-from wok import renderers
-from wok.engine import Engine
+from woklib import renderers
+from woklib.engine import Engine
 
 
 DefaultRenderers = {}
