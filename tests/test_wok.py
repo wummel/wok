@@ -1,7 +1,7 @@
 import sys
 import os
 from unittest import TestCase
-from . import wok_cmd, run_checked
+from . import wok_cmd, run_checked, wokdir
 
 
 def run_with_options(options, cmd=wok_cmd):
@@ -21,14 +21,8 @@ class TestWok(TestCase):
         # unknown option
         self.assertRaises(OSError, run_with_options, ['--imadoofus'])
         # create test site
-        os.chdir("test_site")
-        try:
-            run_with_options(["-v"])
-        finally:
-            os.chdir("..")
+        os.chdir(os.path.join(wokdir, "test_site"))
+        run_with_options(["-v"])
         # create documentation
-        os.chdir("docs")
-        try:
-            run_with_options(["-v"])
-        finally:
-            os.chdir("..")
+        os.chdir(os.path.join(wokdir, "docs"))
+        run_with_options(["-v"])

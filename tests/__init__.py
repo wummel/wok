@@ -3,7 +3,8 @@ import os
 import subprocess
 
 basedir = os.path.dirname(__file__)
-wok_cmd = os.path.join(os.path.dirname(basedir), "wok")
+wokdir = os.path.dirname(basedir)
+wok_cmd = os.path.join(wokdir, "wok")
 
 
 def run (cmd, verbosity=0, **kwargs):
