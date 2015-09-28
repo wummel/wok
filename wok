@@ -3,18 +3,19 @@
 import sys
 import logging
 import argparse
-from _wok_configdata import (description as AppDescription,
-  name as AppName, version as AppVersion)
-from woklib.engine import Engine
 
 
 def setup_parser():
     """Construct CLI argument parser."""
+    from _wok_configdata import (description as AppDescription,
+      name as AppName, version as AppVersion)
     parser = argparse.ArgumentParser(description=AppDescription)
     parser.add_argument('--server', action='store',
-            help="run a development server instead of generating the site")
-    parser.add_argument('--init-site', action='store',
-            help="initialize a default configuration with given site title")
+            help="Run a development server instead of generating the site."
+            " The server name can be <hostname> or <hostname>:<port>."
+            " Default server port is 8000.")
+    parser.add_argument('--init', action='store', metavar="TITLE",
+            help="Initialize a default configuration with given site title.")
     version = "%s %s" % (AppName, AppVersion)
     parser.add_argument('--version', action='version', version=version)
 
@@ -54,8 +55,9 @@ def main():
         logging_options['stream'] = sys.stdout
 
     logging.basicConfig(**logging_options)
+    from woklib.engine import Engine
     engine = Engine()
-    engine.run(init_site_title=options.init_site, server=options.server)
+    engine.run(init_site_title=options.init, server=options.server)
 
 
 if __name__ == '__main__':
